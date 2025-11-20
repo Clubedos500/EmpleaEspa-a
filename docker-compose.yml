@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # Core Backend (Java Spring Boot)
+  api-core:
+    image: openjdk:17-alpine
+    # In a real scenario: build: ./services/core
+    command: java -jar app.jar
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8080:8080"
+
+  # ML Service (Python FastAPI) for CV Parsing
+  api-ml:
+    image: python:3.9-slim
+    # In a real scenario: build: ./services/ml
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq
+
+  # Database
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: securepassword
+      POSTGRES_DB: empleaes_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # Cache & Session
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
+
+  # Message Queue
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  # Search Engine
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+
+volumes:
+  db_data:

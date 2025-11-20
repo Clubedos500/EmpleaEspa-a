@@ -1,0 +1,7 @@
+{
+  "name": "EmpleaEspaña - Job Portal",
+  "description": "A compliant job search platform for Spain supporting minors, GDPR, and advanced matching.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
